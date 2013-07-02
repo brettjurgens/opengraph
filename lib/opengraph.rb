@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'restclient'
 
 module OpenGraph
+
   # Fetch Open Graph data from the specified URI. Makes an
   # HTTP GET request and returns an OpenGraph::Object if there
   # is data to be found or <tt>false</tt> if there isn't.
@@ -10,7 +11,8 @@ module OpenGraph
   # Pass <tt>false</tt> for the second argument if you want to
   # see invalid (i.e. missing a required attribute) data.
   def self.fetch(uri, strict = true)
-    parse(RestClient.get(uri).body, strict)
+    useragent = "facebookexternalhit/1.0 (+http://www.facebook.com/externalhit_uatext.php)"
+    parse(RestClient.get(uri, :user_agent=>useragent).body, strict)
   rescue RestClient::Exception, SocketError
     false
   end
