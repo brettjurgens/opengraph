@@ -10,7 +10,7 @@ module OpenGraph
   #
   # Pass <tt>false</tt> for the second argument if you want to
   # see invalid (i.e. missing a required attribute) data.
-  def self.fetch(uri, strict = true)
+  def self.fetch(uri, strict = false)
     useragent = "facebookexternalhit/1.0 (+http://www.facebook.com/externalhit_uatext.php)"
     parse(RestClient.get(uri, :user_agent=>useragent).body, strict)
   rescue RestClient::Exception, SocketError
@@ -22,7 +22,13 @@ module OpenGraph
     page = OpenGraph::Object.new
     doc.css('meta').each do |m|
       if m.attribute('property') && m.attribute('property').to_s.match(/^og:(.+)$/i)
-        page[$1.gsub('-','_')] = m.attribute('content').to_s
+        page[$1] = m.attribute('content').to_s
+      elsif m.attribute('property') && !page[m.attribute('property').to_s] # make sure OG takes preference
+        page[m.attribute('property').to_s] = m.attribute('content').to_s
+      elsif m.attribute('name') && m.attribute('content') && !page[m.attribute('name').to_s] # make sure OG takes preference
+        page[m.attribute('name').to_s] = m.attribute('content').to_s
+      elsif m.attribute('name') && m.attribute('value') && !page[m.attribute('name').to_s] # make sure OG takes preference
+        page[m.attribute('name').to_s] = m.attribute('value').to_s
       end
     end
     return false if page.keys.empty?
